@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -58,28 +57,43 @@ namespace ReactiveX.Trial.Tests
         [Test]
         public void Test4()
         {
-            using (var data = new Subject<int>())
-            using (var process = new Subject<char>())
+            using (var data = new Subject<string>())
+            using (var process = new Subject<string>())
             {
-                IObservable<int> observableData = data;
-                IObservable<char> observableProcess = process;
+                IObservable<string> observableData = data;
+                IObservable<string> observableProcess = process;
 
-                var observable = observableData;
+                var observable = observableData.WithLatestFrom(observableProcess, (data1, process1) => data1 + process1);
+                //var observable = observableData.Merge(observableProcess);
+                //var observable = observableData.Zip(observableProcess, (data1, process1) => data1 + process1);
 
-                IList<int> actual = new List<int>();
-                var subscription = observable.Subscribe(value =>
-                {
-                    actual.Add(value);
-                    Console.WriteLine(value);
-                });
+                const string expected = "2a3a4a5a6b7b8b";
+                var actual = string.Empty;
 
-                data.OnNext(1);
-                data.OnNext(2);
-                data.OnNext(3);
+                var subscription = observable
+                    .Subscribe(value =>
+                    {
+                        actual += value;
+                        Console.WriteLine(value);
+                    });
+
+                data.OnNext("1");
+                process.OnNext("a");
+                data.OnNext("2");
+                data.OnNext("3");
+                data.OnNext("4");
+                data.OnNext("5");
+                process.OnNext("b");
+                data.OnNext("6");
+                data.OnNext("7");
+                data.OnNext("8");
+                process.OnNext("c");
+                data.OnCompleted();
+                process.OnCompleted();
 
                 subscription.Dispose();
 
-                Assert.That(actual, Is.EqualTo(new[] {1, 2, 3}));
+                Assert.That(actual, Is.EqualTo(expected));
             }
         }
 
