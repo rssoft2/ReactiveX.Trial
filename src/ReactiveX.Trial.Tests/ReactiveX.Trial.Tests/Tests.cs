@@ -8,11 +8,6 @@ namespace ReactiveX.Trial.Tests
 {
     public class Tests
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public void Test1()
         {
@@ -101,54 +96,118 @@ namespace ReactiveX.Trial.Tests
         {
             var classicHotlink = new ClassicHotlink<string>();
 
-            void CallbackAction(string value)
+            void OnNext(string value)
             {
                 Console.Write(value);
             }
 
-            void DisposedAction()
+            void OnError(Exception exception)
             {
-                Console.WriteLine(" classic hotlink disposed");
+                Console.WriteLine("exception, ");
             }
 
-            var observable = classicHotlink.AsObservable(DisposedAction);
-            var subscription = observable.Subscribe(CallbackAction);
+            void OnCompleted()
+            {
+                Console.Write("sequence completed, ");
+            }
 
-            classicHotlink.RaiseCallback("1");
-            classicHotlink.RaiseCallback("2");
-            classicHotlink.RaiseCallback("3");
-            classicHotlink.RaiseCallback(" der gejid!");
+            var observable = classicHotlink.AsObservable();
+            observable.Subscribe(OnNext, OnError, OnCompleted);
+
+            classicHotlink.Emit("1, ");
+            classicHotlink.Emit("2, ");
+            classicHotlink.Emit("3, ");
+            classicHotlink.Emit("der gejid!, ");
+            classicHotlink.Complete();
+        }
+
+        [TestCase("fail", true)]
+        [TestCase("complete", false)]
+        public void Test6(string description, bool fail)
+        {
+            var classicHotlink = new ClassicHotlink<string>();
+
+            void OnNext(string value)
+            {
+                Console.Write("a: " + value);
+            }
+
+            void OnNext2(string value)
+            {
+                Console.Write("b: " + value);
+            }
+
+            void OnError2(Exception exception)
+            {
+                Console.Write("b: " + exception + ", ");
+            }
+
+            void OnCompleted2()
+            {
+                Console.Write("b: sequence completed, ");
+            }
+
+            var observable = classicHotlink.AsConnectableObservable();
+            var subscription = observable.Subscribe(OnNext, _ => { }, () => { });
+            observable.Subscribe(OnNext2, OnError2, OnCompleted2);
+            observable.Connect();
+
+            classicHotlink.Emit("1, ");
+            classicHotlink.Emit("2, ");
 
             subscription.Dispose();
+
+            if (fail)
+                classicHotlink.Fail();
+
+            classicHotlink.Emit("3, ");
+
+            if (!fail)
+                classicHotlink.Complete();
         }
     }
 
     public interface IClassicHotlink<out T>
     {
-        IDisposable CreateHotlinkSingle(Action<T> callback, Action disposed);
+        IDisposable CreateHotlinkSingle(IObserver<T> observer);
     }
 
     public class ClassicHotlink<T> : IClassicHotlink<T>
     {
-        private Action<T> _callback;
+        private IObserver<T> _observer;
 
-        public IDisposable CreateHotlinkSingle(Action<T> callback, Action disposed)
+        public IDisposable CreateHotlinkSingle(IObserver<T> observer)
         {
-            _callback = callback;
-            return Disposable.Create(disposed);
+            _observer = observer;
+            return Disposable.Create(() => Console.Write("hotlink disposed, "));
         }
 
-        public void RaiseCallback(T value)
+        public void Emit(T value)
         {
-            _callback(value);
+            _observer.OnNext(value);
+        }
+
+        public void Fail()
+        {
+            _observer.OnError(new Exception("callback failed"));
+        }
+
+        public void Complete()
+        {
+            _observer.OnCompleted();
         }
     }
 
     public static class ObservableExtensions
     {
-        public static IObservable<T> AsObservable<T>(this IClassicHotlink<T> classicHotlink, Action disposed)
+        public static IObservable<T> AsObservable<T>(this IClassicHotlink<T> classicHotlink)
         {
-            return Observable.Create<T>(observer => classicHotlink.CreateHotlinkSingle(observer.OnNext, disposed));
+            return Observable.Create<T>(classicHotlink.CreateHotlinkSingle);
+        }
+
+        public static IConnectableObservable<T> AsConnectableObservable<T>(this IClassicHotlink<T> classicHotlink)
+        {
+            return classicHotlink.AsObservable().Publish();
         }
     }
 }
