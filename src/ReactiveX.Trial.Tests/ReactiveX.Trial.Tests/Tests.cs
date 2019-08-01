@@ -166,11 +166,14 @@ namespace ReactiveX.Trial.Tests
             var observable = classicHotlink.AsConnectableObservable();
             var subscription = observable.Subscribe(OnNext, _ => { }, () => { });
             observable.Subscribe(OnNext2, OnError2, OnCompleted2);
-            observable.Connect();
 
+            var connection = observable.Connect();
             classicHotlink.Emit("1, ");
+            connection.Dispose();
+            classicHotlink.Emit("lost, ");
+            observable.Connect();
             classicHotlink.Emit("2, ");
-
+            
             subscription.Dispose();
 
             if (fail)
