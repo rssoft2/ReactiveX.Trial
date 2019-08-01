@@ -35,8 +35,30 @@ namespace ReactiveX.Trial.Tests
         }
 
         [Test]
-        public void Test3()
+        public void Test3A()
         {
+            var observable = Observable.Create(
+                (IObserver<int> observer) =>
+                {
+                    for (var i = 0; i < 10; i++) observer.OnNext(i + 1);
+                    observer.OnCompleted();
+                    return () => Console.WriteLine("Observer has unsubscribed");
+                });
+
+            var subscription = observable.Subscribe(Console.WriteLine);
+            subscription.Dispose();
+        }
+
+        [Test]
+        public void Test3B()
+        {
+            IDisposable Subscribe(IObserver<int> observer)
+            {
+                for (var i = 0; i < 10; i++) observer.OnNext(i + 1);
+                observer.OnCompleted();
+                return Disposable.Create(() => Console.WriteLine("Observer has unsubscribed"));
+            }
+
             var observable = Observable.Create<int>(Subscribe);
 
             var subscription = observable.Subscribe(Console.WriteLine);
@@ -83,12 +105,6 @@ namespace ReactiveX.Trial.Tests
 
                 Assert.That(actual, Is.EqualTo(expected));
             }
-        }
-
-        private static IDisposable Subscribe(IObserver<int> observer)
-        {
-            for (var i = 0; i < 10; i++) observer.OnNext(i + 1);
-            return Disposable.Empty;
         }
 
         [Test]
