@@ -32,7 +32,7 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var received = false;
 
-            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero);
+            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero, TimeSpan.Zero);
             dataProvider.ChartData.Subscribe(data =>
             {
                 Console.WriteLine(data);
@@ -49,7 +49,7 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var completed = false;
 
-            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero);
+            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero, TimeSpan.Zero);
             dataProvider.ChartData
                 .Subscribe(Console.WriteLine, () => completed = true);
             dataProvider.Stop();
@@ -64,7 +64,10 @@ namespace ReactiveX.Trial.Tests
             IDataProvider dataProvider = new DataProvider();
             var received = 0;
 
-            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100));
+            dataProvider.Start(
+                TimeSpan.FromMilliseconds(10), 
+                TimeSpan.FromMilliseconds(100),
+                TimeSpan.FromMilliseconds(10));
             dataProvider.SlidingChartData.Subscribe(window =>
             {
                 Console.WriteLine("new window");

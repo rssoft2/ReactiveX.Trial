@@ -6,8 +6,8 @@ namespace ReactiveX.Logic
     {
         IObservable<ChartData> ChartData { get; }
         IObservable<IObservable<ChartData>> SlidingChartData { get; }
-        void Restart(TimeSpan sampleInterval, TimeSpan windowLength);
-        void Start(TimeSpan sampleInterval, TimeSpan windowLength);
+        void Restart(TimeSpan sampleInterval, TimeSpan windowLength, TimeSpan timeShift);
+        void Start(TimeSpan sampleInterval, TimeSpan windowLength, TimeSpan timeShift);
         void Stop();
     }
 }
