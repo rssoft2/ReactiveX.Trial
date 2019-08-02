@@ -203,7 +203,7 @@ namespace ReactiveX.Trial.Tests
             var subscription1 = someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
             subscription1.Dispose();
 
-            var subscription2 = someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
+            someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
         }
 
 
@@ -270,10 +270,10 @@ namespace ReactiveX.Trial.Tests
             observable.Subscribe(replaySubject);
 
             var subscription1 = replaySubject.Subscribe(OnNext, _ => { }, () => { });
-            
+
             classicHotlink.Emit("1");
             subscription1.Dispose();
-            
+
             classicHotlink.Emit("not lost!");
 
             var subscription2 = replaySubject.Subscribe(OnNext2, OnError2, OnCompleted2);
@@ -289,9 +289,8 @@ namespace ReactiveX.Trial.Tests
             if (!fail)
                 classicHotlink.Complete();
 
-            var subscription3 = replaySubject.Subscribe(OnNext2, OnError2, OnCompleted2);
+            replaySubject.Subscribe(OnNext2, OnError2, OnCompleted2);
         }
-
     }
 
     public interface IClassicHotlink<out T>
