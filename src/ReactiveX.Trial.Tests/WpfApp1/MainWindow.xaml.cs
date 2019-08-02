@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows.Input;
@@ -17,13 +18,15 @@ namespace WpfApp1
             InitializeComponent();
             IDataProvider dataProvider = new DataProvider();
             
-
             Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
                 .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).X) < 10)
                 .Subscribe(eventArgs =>
                 {
                     dataProvider.Restart(TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(2));
-                    ViewModel = new AppViewModel(dataProvider.ChartData.Select(data => data.ToString()));
+
+                    dataProvider.SlidingChartData
+                        .ObserveOn(DispatcherScheduler.Current)
+                        .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
                 });
 
             Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
@@ -36,8 +39,11 @@ namespace WpfApp1
             Observable.FromEventPattern(Start, "Click")
                 .Subscribe(pattern =>
                 {
-                    dataProvider.Restart();
-                    ViewModel = new AppViewModel(dataProvider.ChartData.Select(data => data.ToString()));
+                    dataProvider.Restart(TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(2));
+
+                    dataProvider.SlidingChartData
+                        .ObserveOn(DispatcherScheduler.Current)
+                        .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
                 });
 
             Observable.FromEventPattern(Stop, "Click")
