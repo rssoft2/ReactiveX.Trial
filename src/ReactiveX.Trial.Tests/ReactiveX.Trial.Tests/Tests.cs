@@ -187,18 +187,16 @@ namespace ReactiveX.Trial.Tests
                 classicHotlink.Complete();
         }
 
-
-        private static IObservable<int> GetNewValues()
-        {
-            var intervalObservable = Observable.Range(0, 5);
-
-            return intervalObservable;
-        }
-
-
         [Test]
         public void Defer()
         {
+            IObservable<int> GetNewValues()
+            {
+                var intervalObservable = Observable.Range(0, 5);
+
+                return intervalObservable;
+            }
+
             var someObservable = Observable.Defer(GetNewValues);
 
             var subscription1 = someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
@@ -206,7 +204,6 @@ namespace ReactiveX.Trial.Tests
 
             someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
         }
-
 
         /// <summary>
         ///     see http://davesexton.com/blog/post/To-Use-Subject-Or-Not-To-Use-Subject.aspx
@@ -293,6 +290,4 @@ namespace ReactiveX.Trial.Tests
             replaySubject.Subscribe(OnNext2, OnError2, OnCompleted2);
         }
     }
-
-   
 }
