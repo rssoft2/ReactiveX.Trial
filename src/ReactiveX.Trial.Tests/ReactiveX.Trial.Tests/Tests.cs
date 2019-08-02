@@ -237,6 +237,61 @@ namespace ReactiveX.Trial.Tests
 
             _.Dispose();
         }
+
+        [TestCase("fail", true)]
+        [TestCase("complete", false)]
+        public void Test6_WithReplaySubject(string description, bool fail)
+        {
+            var classicHotlink = new ClassicHotlink<string>();
+
+            void OnNext(string value)
+            {
+                Console.WriteLine("a: " + value);
+            }
+
+            void OnNext2(string value)
+            {
+                Console.WriteLine("b: " + value);
+            }
+
+            void OnError2(Exception exception)
+            {
+                Console.WriteLine("b: " + exception);
+            }
+
+            void OnCompleted2()
+            {
+                Console.WriteLine("b: sequence completed");
+            }
+
+            var observable = classicHotlink.AsObservable();
+
+            var replaySubject = new ReplaySubject<string>();
+            observable.Subscribe(replaySubject);
+
+            var subscription1 = replaySubject.Subscribe(OnNext, _ => { }, () => { });
+            
+            classicHotlink.Emit("1");
+            subscription1.Dispose();
+            
+            classicHotlink.Emit("not lost!");
+
+            var subscription2 = replaySubject.Subscribe(OnNext2, OnError2, OnCompleted2);
+            classicHotlink.Emit("2");
+
+            subscription2.Dispose();
+
+            if (fail)
+                classicHotlink.Fail();
+
+            classicHotlink.Emit("3 - no observer");
+
+            if (!fail)
+                classicHotlink.Complete();
+
+            var subscription3 = replaySubject.Subscribe(OnNext2, OnError2, OnCompleted2);
+        }
+
     }
 
     public interface IClassicHotlink<out T>
