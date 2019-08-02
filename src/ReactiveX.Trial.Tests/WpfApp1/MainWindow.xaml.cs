@@ -46,7 +46,7 @@ namespace WpfApp1
                 {
                     this.OneWayBind(ViewModel,
                             viewModel => viewModel.TargetCollection,
-                            view => view.list.ItemsSource)
+                            view => view.List.ItemsSource)
                         .DisposeWith(disposableRegistration);
 
                     RestartDataProvider(dataProvider);

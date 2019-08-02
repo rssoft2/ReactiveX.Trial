@@ -33,77 +33,75 @@ namespace WpfApp1
             DependencyObject d,
             DependencyPropertyChangedEventArgs e)
         {
-            var ListView = d as ListView;
-            if (ListView == null) return;
+            var listView = d as ListView;
+            if (listView == null) return;
             bool oldValue = (bool) e.OldValue, newValue = (bool) e.NewValue;
             if (newValue == oldValue) return;
             if (newValue)
             {
-                ListView.Loaded += ListView_Loaded;
-                ListView.Unloaded += ListView_Unloaded;
-                var itemsSourcePropertyDescriptor = TypeDescriptor.GetProperties(ListView)["ItemsSource"];
-                itemsSourcePropertyDescriptor.AddValueChanged(ListView, ListView_ItemsSourceChanged);
+                listView.Loaded += ListView_Loaded;
+                listView.Unloaded += ListView_Unloaded;
+                var itemsSourcePropertyDescriptor = TypeDescriptor.GetProperties(listView)["ItemsSource"];
+                itemsSourcePropertyDescriptor.AddValueChanged(listView, ListView_ItemsSourceChanged);
             }
             else
             {
-                ListView.Loaded -= ListView_Loaded;
-                ListView.Unloaded -= ListView_Unloaded;
-                if (Associations.ContainsKey(ListView))
-                    Associations[ListView].Dispose();
-                var itemsSourcePropertyDescriptor = TypeDescriptor.GetProperties(ListView)["ItemsSource"];
-                itemsSourcePropertyDescriptor.RemoveValueChanged(ListView, ListView_ItemsSourceChanged);
+                listView.Loaded -= ListView_Loaded;
+                listView.Unloaded -= ListView_Unloaded;
+                if (Associations.ContainsKey(listView))
+                    Associations[listView].Dispose();
+                var itemsSourcePropertyDescriptor = TypeDescriptor.GetProperties(listView)["ItemsSource"];
+                itemsSourcePropertyDescriptor.RemoveValueChanged(listView, ListView_ItemsSourceChanged);
             }
         }
 
         private static void ListView_ItemsSourceChanged(object sender, EventArgs e)
         {
-            var ListView = (ListView) sender;
-            if (Associations.ContainsKey(ListView))
-                Associations[ListView].Dispose();
-            Associations[ListView] = new Capture(ListView);
+            var listView = (ListView) sender;
+            if (Associations.ContainsKey(listView))
+                Associations[listView].Dispose();
+            Associations[listView] = new Capture(listView);
         }
 
         private static void ListView_Unloaded(object sender, RoutedEventArgs e)
         {
-            var ListView = (ListView) sender;
-            if (Associations.ContainsKey(ListView))
-                Associations[ListView].Dispose();
-            ListView.Unloaded -= ListView_Unloaded;
+            var listView = (ListView) sender;
+            if (Associations.ContainsKey(listView))
+                Associations[listView].Dispose();
+            listView.Unloaded -= ListView_Unloaded;
         }
 
         private static void ListView_Loaded(object sender, RoutedEventArgs e)
         {
-            var ListView = (ListView) sender;
-            var incc = ListView.Items as INotifyCollectionChanged;
-            if (incc == null) return;
-            ListView.Loaded -= ListView_Loaded;
-            Associations[ListView] = new Capture(ListView);
+            var listView = (ListView) sender;
+            listView.Loaded -= ListView_Loaded;
+            Associations[listView] = new Capture(listView);
         }
 
         private class Capture : IDisposable
         {
-            private readonly INotifyCollectionChanged incc;
-            private readonly ListView ListView;
+            private readonly INotifyCollectionChanged _incc;
+            private readonly ListView _listView;
 
-            public Capture(ListView ListView)
+            public Capture(ListView listView)
             {
-                this.ListView = ListView;
-                incc = ListView.ItemsSource as INotifyCollectionChanged;
-                if (incc != null) incc.CollectionChanged += incc_CollectionChanged;
+                _listView = listView;
+                _incc = listView.ItemsSource as INotifyCollectionChanged;
+                if (_incc != null) _incc.CollectionChanged += incc_CollectionChanged;
             }
 
             public void Dispose()
             {
-                if (incc != null)
-                    incc.CollectionChanged -= incc_CollectionChanged;
+                if (_incc != null)
+                    _incc.CollectionChanged -= incc_CollectionChanged;
             }
 
             private void incc_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
                 if (e.Action == NotifyCollectionChangedAction.Add)
                 {
-                    ListView.ScrollIntoView(e.NewItems[0]);
-                    ListView.SelectedItem = e.NewItems[0];
+                    _listView.ScrollIntoView(e.NewItems[0]);
+                    _listView.SelectedItem = e.NewItems[0];
                 }
             }
         }

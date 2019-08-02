@@ -12,7 +12,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
-        <ListView x:Name="list" local:ListViewBehavior.ScrollOnNewItem="true" Grid.Row="0">
+        <ListView x:Name="List" local:ListViewBehavior.ScrollOnNewItem="true" Grid.Row="0">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <WrapPanel>

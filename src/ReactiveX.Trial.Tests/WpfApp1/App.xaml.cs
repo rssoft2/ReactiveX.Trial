@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Windows;
 using ReactiveUI;
 using Splat;
 
@@ -8,7 +7,7 @@ namespace WpfApp1
     /// <summary>
     ///     Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App
     {
         public App()
         {
