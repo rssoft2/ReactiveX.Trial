@@ -2,6 +2,7 @@ using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace ReactiveX.Trial.Tests
@@ -184,8 +185,29 @@ namespace ReactiveX.Trial.Tests
             if (!fail)
                 classicHotlink.Complete();
         }
-    }
 
+
+        private static IObservable<int> GetNewValues()
+        {
+            var intervalObservable = Observable.Range(0, 5);
+
+            return intervalObservable;
+        }
+
+
+        [Test]
+        public void Defer()
+        {
+            var someObservable = Observable.Defer(GetNewValues);
+
+            var subscription1 = someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
+            subscription1.Dispose();
+
+            var subscription2 = someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
+        }
+
+    }
+    
     public interface IClassicHotlink<out T>
     {
         IDisposable CreateHotlinkSingle(IObserver<T> observer);
