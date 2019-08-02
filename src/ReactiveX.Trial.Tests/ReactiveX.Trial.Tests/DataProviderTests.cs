@@ -32,13 +32,13 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var received = false;
 
-            dataProvider.Start();
+            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero);
             dataProvider.ChartData.Subscribe(data =>
             {
                 Console.WriteLine(data);
                 received = true;
             });
-            Thread.Sleep(200);
+            Thread.Sleep(100);
 
             Assert.That(received, Is.True);
         }
@@ -49,13 +49,31 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var completed = false;
 
-            dataProvider.Start();
+            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero);
             dataProvider.ChartData
                 .Subscribe(Console.WriteLine, () => completed = true);
             dataProvider.Stop();
             Thread.Sleep(100);
 
             Assert.That(completed, Is.True);
+        }
+
+        [Test]
+        public void SlidingChartData_Subscribed_WindowsReceived()
+        {
+            IDataProvider dataProvider = new DataProvider();
+            var received = 0;
+
+            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100));
+            dataProvider.SlidingChartData.Subscribe(window =>
+            {
+                Console.WriteLine("new window");
+                window.Subscribe(Console.WriteLine);
+                received++;
+            });
+            Thread.Sleep(1000);
+
+            Assert.That(received, Is.GreaterThan(1));
         }
     }
 }

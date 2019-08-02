@@ -17,22 +17,25 @@ namespace ReactiveX.Logic
         }
 
         public IObservable<ChartData> ChartData { get; private set; }
+        public IObservable<IObservable<ChartData>> SlidingChartData { get; private set; }
 
-        public void Restart()
+        public void Restart(TimeSpan sampleInterval, TimeSpan windowLength)
         {
             Stop();
-            Start();
+            Start(sampleInterval, windowLength);
         }
 
-        public void Start()
+        public void Start(TimeSpan sampleInterval, TimeSpan windowLength)
         {
             _isRunning = true;
 
             ChartData = Observable
                 .Generate((long) 0, _ => _isRunning, i => i + 1, l => l, NewThreadScheduler.Default)
-                .Sample(TimeSpan.FromMilliseconds(20))
+                .Sample(sampleInterval)
                 .Timestamp()
                 .Select(CreateChartData);
+
+            SlidingChartData = ChartData.Window(windowLength);
         }
 
         public void Stop()

@@ -21,7 +21,7 @@ namespace WpfApp1
                 .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).X) < 10)
                 .Subscribe(eventArgs =>
                 {
-                    dataProvider.Restart();
+                    dataProvider.Restart(TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(2));
                     ViewModel = new AppViewModel(dataProvider.ChartData.Select(data => data.ToString()));
                 });
 

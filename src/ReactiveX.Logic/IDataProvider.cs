@@ -5,8 +5,9 @@ namespace ReactiveX.Logic
     public interface IDataProvider
     {
         IObservable<ChartData> ChartData { get; }
-        void Start();
+        IObservable<IObservable<ChartData>> SlidingChartData { get; }
+        void Restart(TimeSpan sampleInterval, TimeSpan windowLength);
+        void Start(TimeSpan sampleInterval, TimeSpan windowLength);
         void Stop();
-        void Restart();
     }
 }
