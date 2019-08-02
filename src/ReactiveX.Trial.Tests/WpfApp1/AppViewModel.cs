@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Reactive.Concurrency;
+using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Windows;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -14,9 +15,15 @@ namespace WpfApp1
             ValuesDyn = new SourceList<string>(observable.ToObservableChangeSet());
 
             ValuesDyn.Connect()
-                .ObserveOn(DispatcherScheduler.Current)
+                .ObserveOn(Application.Current.Dispatcher)
                 .Bind(TargetCollection)
                 .Subscribe();
+        }
+
+        public AppViewModel(IEnumerable<string> list)
+        {
+            TargetCollection.Clear();
+            TargetCollection.Add(list);
         }
 
         private SourceList<string> ValuesDyn { get; }

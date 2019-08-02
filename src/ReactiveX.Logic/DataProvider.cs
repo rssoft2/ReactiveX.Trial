@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -17,7 +18,8 @@ namespace ReactiveX.Logic
         }
 
         public IObservable<ChartData> ChartData { get; private set; }
-        public IObservable<IObservable<ChartData>> SlidingChartData { get; private set; }
+        public IObservable<IObservable<ChartData>> WindowedChartData { get; private set; }
+        public IObservable<IList<ChartData>> BufferedChartData { get; private set; }
 
         public void Restart(TimeSpan sampleInterval, TimeSpan windowLength, TimeSpan timeShift)
         {
@@ -35,7 +37,9 @@ namespace ReactiveX.Logic
                 .Timestamp()
                 .Select(CreateChartData);
 
-            SlidingChartData = ChartData.Window(sampleInterval, timeShift);
+            WindowedChartData = ChartData.Window(windowLength, timeShift);
+
+            BufferedChartData = ChartData.Buffer(windowLength, timeShift);
         }
 
         public void Stop()
