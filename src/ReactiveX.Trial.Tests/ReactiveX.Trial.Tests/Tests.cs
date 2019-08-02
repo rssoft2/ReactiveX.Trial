@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using NUnit.Framework;
+using ReactiveX.Logic;
 
 namespace ReactiveX.Trial.Tests
 {
@@ -293,47 +294,5 @@ namespace ReactiveX.Trial.Tests
         }
     }
 
-    public interface IClassicHotlink<out T>
-    {
-        IDisposable CreateHotlinkSingle(IObserver<T> observer);
-    }
-
-    public class ClassicHotlink<T> : IClassicHotlink<T>
-    {
-        private IObserver<T> _observer;
-
-        public IDisposable CreateHotlinkSingle(IObserver<T> observer)
-        {
-            _observer = observer;
-            return Disposable.Create(() => Console.Write("hotlink disposed, "));
-        }
-
-        public void Emit(T value)
-        {
-            _observer.OnNext(value);
-        }
-
-        public void Fail()
-        {
-            _observer.OnError(new Exception("callback failed"));
-        }
-
-        public void Complete()
-        {
-            _observer.OnCompleted();
-        }
-    }
-
-    public static class ObservableExtensions
-    {
-        public static IObservable<T> AsObservable<T>(this IClassicHotlink<T> classicHotlink)
-        {
-            return Observable.Create<T>(classicHotlink.CreateHotlinkSingle);
-        }
-
-        public static IConnectableObservable<T> AsConnectableObservable<T>(this IClassicHotlink<T> classicHotlink)
-        {
-            return classicHotlink.AsObservable().Publish();
-        }
-    }
+   
 }
