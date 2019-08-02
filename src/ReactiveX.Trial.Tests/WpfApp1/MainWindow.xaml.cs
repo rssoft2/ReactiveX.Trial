@@ -16,8 +16,10 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
+
             IDataProvider dataProvider = new DataProvider();
-            
+            var subscription = Disposable.Empty;
+
             //Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
             //    .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).X) < 10)
             //    .Subscribe(eventArgs =>
@@ -33,15 +35,16 @@ namespace WpfApp1
             //    .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).Y) < 10)
             //    .Subscribe(eventArgs => dataProvider.Stop());
 
-            Observable.FromEventPattern(this, "Closed")
-                .Subscribe(pattern => dataProvider.Stop());
 
             Observable.FromEventPattern(Start, "Click")
-                .Subscribe(pattern => RestartDataProvider(dataProvider));
+                .Subscribe(pattern => { subscription = RestartDataProvider(dataProvider, subscription); });
 
             Observable.FromEventPattern(Stop, "Click")
-                .Subscribe(pattern => dataProvider.Stop());
+                .Subscribe(pattern => StopDataProvider(dataProvider, subscription));
 
+            Observable.FromEventPattern(this, "Closed")
+                .Subscribe(pattern => StopDataProvider(dataProvider, subscription));
+            
             this.WhenActivated(disposableRegistration =>
                 {
                     this.OneWayBind(ViewModel,
@@ -49,16 +52,23 @@ namespace WpfApp1
                             view => view.List.ItemsSource)
                         .DisposeWith(disposableRegistration);
 
-                    RestartDataProvider(dataProvider);
+                    subscription = RestartDataProvider(dataProvider, subscription);
                 }
             );
         }
 
-        private void RestartDataProvider(IDataProvider dataProvider)
+        private static void StopDataProvider(IDataProvider dataProvider, IDisposable subscription)
         {
+            subscription.Dispose();
+            dataProvider.Stop();
+        }
+
+        private IDisposable RestartDataProvider(IDataProvider dataProvider, IDisposable subscription)
+        {
+            subscription.Dispose();
             dataProvider.Restart(TimeSpan.FromMilliseconds(40), TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(40));
 
-            dataProvider.BufferedChartData
+            return dataProvider.BufferedChartData
                 .ObserveOn(DispatcherScheduler.Current)
                 .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
 

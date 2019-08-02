@@ -7,6 +7,10 @@ namespace ReactiveX.Trial.Tests
 {
     public class DataProviderTests
     {
+        private readonly TimeSpan _bufferLength = TimeSpan.FromMilliseconds(100);
+        private readonly TimeSpan _sampleIntervall = TimeSpan.FromMilliseconds(10);
+        private readonly TimeSpan _timeShift = TimeSpan.FromMilliseconds(10);
+
         [Test]
         public void ChartData_NotStarted_NotNull()
         {
@@ -32,7 +36,7 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var received = false;
 
-            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero, TimeSpan.Zero);
+            dataProvider.Start(_sampleIntervall, TimeSpan.Zero, TimeSpan.Zero);
             dataProvider.ChartData.Subscribe(data =>
             {
                 Console.WriteLine(data);
@@ -49,7 +53,7 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var completed = false;
 
-            dataProvider.Start(TimeSpan.FromMilliseconds(10), TimeSpan.Zero, TimeSpan.Zero);
+            dataProvider.Start(_sampleIntervall, TimeSpan.Zero, TimeSpan.Zero);
             dataProvider.ChartData
                 .Subscribe(Console.WriteLine, () => completed = true);
             dataProvider.Stop();
@@ -66,9 +70,9 @@ namespace ReactiveX.Trial.Tests
             var w = 0;
 
             dataProvider.Start(
-                TimeSpan.FromMilliseconds(10),
-                TimeSpan.FromMilliseconds(100),
-                TimeSpan.FromMilliseconds(10));
+                _sampleIntervall,
+                _bufferLength,
+                _timeShift);
             dataProvider.WindowedChartData.Subscribe(window =>
             {
                 var x = w++;
@@ -89,9 +93,9 @@ namespace ReactiveX.Trial.Tests
             var w = 0;
 
             dataProvider.Start(
-                TimeSpan.FromMilliseconds(10),
-                TimeSpan.FromMilliseconds(100),
-                TimeSpan.FromMilliseconds(10));
+                _sampleIntervall,
+                _bufferLength,
+                _timeShift);
             dataProvider.BufferedChartData.Subscribe(buffer =>
             {
                 var x = w++;

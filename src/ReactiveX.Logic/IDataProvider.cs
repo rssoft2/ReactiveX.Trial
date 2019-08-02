@@ -8,8 +8,8 @@ namespace ReactiveX.Logic
         IObservable<ChartData> ChartData { get; }
         IObservable<IObservable<ChartData>> WindowedChartData { get; }
         IObservable<IList<ChartData>> BufferedChartData { get; }
-        void Restart(TimeSpan sampleInterval, TimeSpan windowLength, TimeSpan timeShift);
-        void Start(TimeSpan sampleInterval, TimeSpan windowLength, TimeSpan timeShift);
+        void Restart(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift);
+        void Start(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift);
         void Stop();
     }
 }

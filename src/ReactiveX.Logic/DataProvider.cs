@@ -15,47 +15,47 @@ namespace ReactiveX.Logic
         {
             _random = new Random();
             ChartData = Observable.Empty<ChartData>();
+            WindowedChartData = Observable.Empty<IObservable<ChartData>>();
+            BufferedChartData = Observable.Empty<IList<ChartData>>();
         }
 
         public IObservable<ChartData> ChartData { get; private set; }
         public IObservable<IObservable<ChartData>> WindowedChartData { get; private set; }
         public IObservable<IList<ChartData>> BufferedChartData { get; private set; }
 
-        public void Restart(TimeSpan sampleInterval, TimeSpan windowLength, TimeSpan timeShift)
+        public void Restart(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift)
         {
             Stop();
-            Start(sampleInterval, windowLength, timeShift);
+            Start(sampleInterval, bufferLength, timeShift);
         }
 
-        public void Start(TimeSpan sampleInterval, TimeSpan windowLength, TimeSpan timeShift)
+        public void Start(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift)
         {
             _isRunning = true;
 
             ChartData = Observable
-                .Generate((long) 0, _ => _isRunning, i => i + 1, l => l, NewThreadScheduler.Default)
+                .Generate(0, _ => _isRunning, _ => _, _ => _, NewThreadScheduler.Default)
                 .Sample(sampleInterval)
                 .Timestamp()
                 .Select(CreateChartData);
 
-            WindowedChartData = ChartData.Window(windowLength, timeShift);
+            WindowedChartData = ChartData.Window(bufferLength, timeShift);
 
-            BufferedChartData = ChartData.Buffer(windowLength, timeShift);
+            BufferedChartData = ChartData.Buffer(bufferLength, timeShift);
         }
 
         public void Stop()
         {
             _isRunning = false;
-
-            ChartData = Observable.Empty<ChartData>();
         }
 
-        private ChartData CreateChartData(Timestamped<long> timestamped)
+        private ChartData CreateChartData(Timestamped<int> timestamped, int index)
         {
             return new ChartData
             {
                 Value = _random.NextDouble(),
                 Timestamp = timestamped.Timestamp,
-                EventId = timestamped.Value
+                EventId = index
             };
         }
     }
