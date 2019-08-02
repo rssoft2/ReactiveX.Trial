@@ -2,7 +2,7 @@ using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
+using System.Threading;
 using NUnit.Framework;
 
 namespace ReactiveX.Trial.Tests
@@ -174,7 +174,7 @@ namespace ReactiveX.Trial.Tests
             classicHotlink.Emit("lost, ");
             observable.Connect();
             classicHotlink.Emit("2, ");
-            
+
             subscription.Dispose();
 
             if (fail)
@@ -206,8 +206,39 @@ namespace ReactiveX.Trial.Tests
             var subscription2 = someObservable.Subscribe(i => Console.WriteLine(i.ToString()));
         }
 
+
+        /// <summary>
+        ///     see http://davesexton.com/blog/post/To-Use-Subject-Or-Not-To-Use-Subject.aspx
+        /// </summary>
+        [Test]
+        public void ReplaySubject()
+        {
+            var someObservable = Observable.Interval(TimeSpan.FromMilliseconds(50));
+
+            Thread.Sleep(1000);
+
+            var myReplaySubject = new ReplaySubject<long>();
+            var _ = someObservable.Subscribe(myReplaySubject);
+
+            var subscription1 = myReplaySubject.Buffer(5).Subscribe(list =>
+            {
+                Console.WriteLine("New List......");
+                foreach (var i in list) Console.WriteLine($"Subscription 1: {i}");
+            });
+            Thread.Sleep(1000);
+            subscription1.Dispose();
+            Console.WriteLine("Subscription 1 disposed.");
+
+            Thread.Sleep(1000);
+
+            Console.WriteLine("Subscription 2 subscribe:");
+            var subscription2 = myReplaySubject.Subscribe(i => Console.WriteLine($"Subscription 2: {i}"));
+            subscription2.Dispose();
+
+            _.Dispose();
+        }
     }
-    
+
     public interface IClassicHotlink<out T>
     {
         IDisposable CreateHotlinkSingle(IObserver<T> observer);
