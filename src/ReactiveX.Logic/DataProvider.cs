@@ -18,6 +18,12 @@ namespace ReactiveX.Logic
 
         public IObservable<ChartData> ChartData { get; private set; }
 
+        public void Restart()
+        {
+            Stop();
+            Start();
+        }
+
         public void Start()
         {
             _isRunning = true;

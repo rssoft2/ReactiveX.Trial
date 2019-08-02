@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Windows.Input;
 using ReactiveUI;
+using ReactiveX.Logic;
 
 namespace WpfApp1
 {
@@ -13,11 +15,22 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-            var observable = Observable
-                .Interval(TimeSpan.FromMilliseconds(100))
-                .Select(i => $"New item {i}");
-            
-            ViewModel = new AppViewModel(observable);
+            IDataProvider dataProvider = new DataProvider();
+
+            Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
+                .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).X) < 10)
+                .Subscribe(eventArgs =>
+                {
+                    dataProvider.Restart();
+                    ViewModel = new AppViewModel(dataProvider.ChartData.Select(data => data.ToString()));
+                });
+
+            Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
+                .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).Y) < 10)
+                .Subscribe(eventArgs => dataProvider.Stop());
+
+            Observable.FromEventPattern(this, "Closed")
+                .Subscribe(pattern => dataProvider.Stop());
 
             this.WhenActivated(disposableRegistration =>
                 {
@@ -28,6 +41,5 @@ namespace WpfApp1
                 }
             );
         }
-
     }
 }

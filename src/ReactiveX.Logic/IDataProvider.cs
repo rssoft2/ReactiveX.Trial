@@ -7,5 +7,6 @@ namespace ReactiveX.Logic
         IObservable<ChartData> ChartData { get; }
         void Start();
         void Stop();
+        void Restart();
     }
 }

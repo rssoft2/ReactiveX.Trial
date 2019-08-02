@@ -107,5 +107,11 @@
       <Version>9.19.5</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\ReactiveX.Logic\ReactiveX.Logic.csproj">
+      <Project>{d9ac2445-c9b6-4770-b709-16306f813da2}</Project>
+      <Name>ReactiveX.Logic</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
