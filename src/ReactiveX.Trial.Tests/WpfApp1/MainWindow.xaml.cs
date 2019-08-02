@@ -16,6 +16,7 @@ namespace WpfApp1
         {
             InitializeComponent();
             IDataProvider dataProvider = new DataProvider();
+            
 
             Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
                 .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).X) < 10)
@@ -30,6 +31,16 @@ namespace WpfApp1
                 .Subscribe(eventArgs => dataProvider.Stop());
 
             Observable.FromEventPattern(this, "Closed")
+                .Subscribe(pattern => dataProvider.Stop());
+
+            Observable.FromEventPattern(Start, "Click")
+                .Subscribe(pattern =>
+                {
+                    dataProvider.Restart();
+                    ViewModel = new AppViewModel(dataProvider.ChartData.Select(data => data.ToString()));
+                });
+
+            Observable.FromEventPattern(Stop, "Click")
                 .Subscribe(pattern => dataProvider.Stop());
 
             this.WhenActivated(disposableRegistration =>

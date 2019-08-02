@@ -8,7 +8,11 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="300" Width="400">
     <Grid>
-        <ListView x:Name="list" local:ListViewBehavior.ScrollOnNewItem="true">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="25"/>
+        </Grid.RowDefinitions>
+        <ListView x:Name="list" local:ListViewBehavior.ScrollOnNewItem="true" Grid.Row="0">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <WrapPanel>
@@ -17,5 +21,11 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Button Content="Start" x:Name="Start" Width="100"/>
+            <Button Content="Stop" x:Name="Stop" Width="100"/>
+        </StackPanel>
+
     </Grid>
 </reactiveUi:ReactiveWindow>
