@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ReactiveX.Logic\ReactiveX.Logic.csproj" />
+    <ProjectReference Include="..\ReactiveX.Logic\ReactiveX.Logic.csproj" />
   </ItemGroup>
 
 </Project>
