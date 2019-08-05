@@ -27,7 +27,7 @@ namespace WpfApp1
 
             Observable.FromEventPattern(this, "Closed")
                 .Subscribe(pattern => StopDataProvider(dataProvider, subscription));
-
+            
             this.WhenActivated(disposableRegistration =>
                 {
                     this.OneWayBind(ViewModel,
@@ -38,6 +38,9 @@ namespace WpfApp1
                     subscription = RestartDataProvider(dataProvider, subscription);
                 }
             );
+
+            Observable.FromEventPattern(this, nameof(Deactivated))
+                .Subscribe(pattern => ViewModel?.Dispose());
         }
 
         private static void StopDataProvider(IDataProvider dataProvider, IDisposable subscription)
@@ -55,7 +58,11 @@ namespace WpfApp1
                 .ObserveOn(DispatcherScheduler.Current)
                 .Select(list => list.ToObservable())
                 .StartWith(dataProvider.ChartData)
-                .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
+                .Subscribe(window =>
+                    {
+                        ViewModel?.Dispose();
+                        ViewModel = new AppViewModel(window.Select(data => data.ToString()));
+                    });
         }
     }
 }
