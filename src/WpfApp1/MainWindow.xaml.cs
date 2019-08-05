@@ -32,7 +32,7 @@ namespace WpfApp1
                     StopDataProvider(dataProvider, subscription);
                     ViewModel?.Dispose();
                 });
-
+            
             this.WhenActivated(disposableRegistration =>
                 {
                     this.OneWayBind(ViewModel,
@@ -58,8 +58,6 @@ namespace WpfApp1
 
             return dataProvider.BufferedChartData
                 .ObserveOn(DispatcherScheduler.Current)
-                .Select(list => list.ToObservable())
-                .StartWith(dataProvider.ChartData)
                 .Subscribe(ViewModel.Subscribe);
         }
     }

@@ -92,6 +92,7 @@ namespace ReactiveX.Trial.Tests
             var received = 0;
             var w = 0;
 
+            Console.WriteLine($"start: {DateTime.Now:ss:fff}");
             dataProvider.Start(
                 _sampleIntervall,
                 _bufferLength,
@@ -99,8 +100,8 @@ namespace ReactiveX.Trial.Tests
             dataProvider.BufferedChartData.Subscribe(buffer =>
             {
                 var x = w++;
-                Console.WriteLine($"new buffer: {DateTime.Now:ss:fff}");
-                foreach (var data in buffer) Console.WriteLine($"new data: b={x}, {DateTime.Now:ss:fff}, {data}");
+                Console.WriteLine($"new window: {DateTime.Now:ss:fff}");
+                buffer.Subscribe(data => Console.WriteLine($"new data: w={x}, {DateTime.Now:ss:fff}, {data}"));
                 received++;
             });
             Thread.Sleep(1000);
