@@ -55,16 +55,11 @@ namespace WpfApp1
             subscription.Dispose();
             dataProvider.Restart(TimeSpan.FromMilliseconds(40), TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(40));
 
-            var dataSubscription = Disposable.Empty;
             return dataProvider.BufferedChartData
                 .ObserveOn(DispatcherScheduler.Current)
                 .Select(list => list.ToObservable())
                 .StartWith(dataProvider.ChartData)
-                .Subscribe(window =>
-                {
-                    dataSubscription?.Dispose();
-                    dataSubscription = ViewModel.Subscribe(window.Select(data => data.ToString()));
-                });
+                .Subscribe(ViewModel.Subscribe);
         }
     }
 }

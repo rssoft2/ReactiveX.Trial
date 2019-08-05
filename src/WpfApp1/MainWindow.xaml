@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         xmlns:reactiveUi="http://reactiveui.net"
+        xmlns:logic="clr-namespace:ReactiveX.Logic;assembly=ReactiveX.Logic"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800">
     <Grid>
@@ -14,9 +15,13 @@
         </Grid.RowDefinitions>
         <ListView x:Name="List" local:ListViewBehavior.ScrollOnNewItem="true" Grid.Row="0">
             <ListView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="logic:ChartData">
                     <WrapPanel>
-                        <TextBlock Text="{Binding}" FontWeight="Bold" />
+                        <TextBlock Text="{Binding EventId}" FontWeight="Bold" />
+                        <TextBlock Text=" - " />
+                        <TextBlock Text="{Binding Value}" Foreground="DarkBlue" />
+                        <TextBlock Text=" - " />
+                        <TextBlock Text="{Binding Timestamp, StringFormat={}{0:ss:fff}}"  />
                     </WrapPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

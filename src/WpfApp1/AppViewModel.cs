@@ -3,23 +3,30 @@ using System.Reactive.Linq;
 using System.Windows;
 using DynamicData;
 using ReactiveUI;
+using ReactiveX.Logic;
 
 namespace WpfApp1
 {
     public class AppViewModel : ReactiveObject, IDisposable
     {
-        public SourceList<string> Values { get; private set; }
+        private IDisposable _valuesSubscription;
+
+        public SourceList<ChartData> Values { get; private set; }
 
         public void Dispose()
         {
+            _valuesSubscription?.Dispose();
             Values?.Dispose();
         }
 
-        public IDisposable Subscribe(IObservable<string> observable)
+        public void Subscribe(IObservable<ChartData> observable)
         {
-            Values = new SourceList<string>(observable.ToObservableChangeSet());
+            _valuesSubscription?.Dispose();
+            Values?.Dispose();
+            
+            Values = new SourceList<ChartData>(observable.ToObservableChangeSet());
 
-            return Values.Connect()
+            _valuesSubscription = Values.Connect()
                 .ObserveOn(Application.Current.Dispatcher)
                 .Subscribe(set => this.RaisePropertyChanged(nameof(Values)));
         }
