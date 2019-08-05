@@ -54,6 +54,7 @@ namespace WpfApp1
             return dataProvider.BufferedChartData
                 .ObserveOn(DispatcherScheduler.Current)
                 .Select(list => list.ToObservable())
+                .StartWith(dataProvider.ChartData)
                 .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
         }
     }
