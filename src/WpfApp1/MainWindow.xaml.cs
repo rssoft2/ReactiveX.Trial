@@ -17,7 +17,7 @@ namespace WpfApp1
             InitializeComponent();
             ViewModel = new AppViewModel();
 
-            IDataProvider dataProvider = new DataProvider();
+            IDataProvider dataProvider = new DataProvider(TimeSpan.FromMilliseconds(40), TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(40));
             var subscription = Disposable.Empty;
 
             Observable.FromEventPattern(Start, "Click")
@@ -54,7 +54,7 @@ namespace WpfApp1
         private IDisposable RestartDataProvider(IDataProvider dataProvider, IDisposable subscription)
         {
             subscription.Dispose();
-            dataProvider.Restart(TimeSpan.FromMilliseconds(40), TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(40));
+            dataProvider.Restart();
 
             return dataProvider.BufferedChartData
                 .ObserveOn(DispatcherScheduler.Current)

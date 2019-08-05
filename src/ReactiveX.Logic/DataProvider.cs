@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
@@ -10,34 +9,40 @@ namespace ReactiveX.Logic
 {
     public class DataProvider : IDataProvider
     {
+        private readonly TimeSpan _sampleInterval;
+        private readonly TimeSpan _bufferLength;
+        private readonly TimeSpan _timeShift;
         private readonly Random _random;
         private bool _isRunning;
 
-        public DataProvider()
+        public DataProvider(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift)
         {
+            _sampleInterval = sampleInterval;
+            _bufferLength = bufferLength;
+            _timeShift = timeShift;
             _random = new Random();
             BufferedChartData = Observable.Empty<IObservable<ChartData>>();
         }
 
         public IObservable<IObservable<ChartData>> BufferedChartData { get; private set; }
 
-        public void Restart(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift)
+        public void Restart()
         {
             Stop();
-            Start(sampleInterval, bufferLength, timeShift);
+            Start();
         }
 
-        public void Start(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift)
+        public void Start()
         {
             _isRunning = true;
 
             var chartData = Observable
                 .Generate(0, _ => _isRunning, _ => _, _ => _, NewThreadScheduler.Default)
-                .Sample(sampleInterval)
+                .Sample(_sampleInterval)
                 .Select(CreateChartData);
 
             BufferedChartData = chartData
-                .Buffer(bufferLength, timeShift)
+                .Buffer(_bufferLength, _timeShift)
                 .Select(list => list.ToObservable())
                 .StartWith(chartData);
         }
