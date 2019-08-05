@@ -15,6 +15,7 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
+            ViewModel = new AppViewModel();
 
             IDataProvider dataProvider = new DataProvider();
             var subscription = Disposable.Empty;
@@ -27,11 +28,11 @@ namespace WpfApp1
 
             Observable.FromEventPattern(this, "Closed")
                 .Subscribe(pattern => StopDataProvider(dataProvider, subscription));
-            
+
             this.WhenActivated(disposableRegistration =>
                 {
                     this.OneWayBind(ViewModel,
-                            viewModel => viewModel.TargetCollection,
+                            viewModel => viewModel.Values.Items,
                             view => view.List.ItemsSource)
                         .DisposeWith(disposableRegistration);
 
@@ -54,15 +55,16 @@ namespace WpfApp1
             subscription.Dispose();
             dataProvider.Restart(TimeSpan.FromMilliseconds(40), TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(40));
 
+            var dataSubscription = Disposable.Empty;
             return dataProvider.BufferedChartData
                 .ObserveOn(DispatcherScheduler.Current)
                 .Select(list => list.ToObservable())
                 .StartWith(dataProvider.ChartData)
                 .Subscribe(window =>
-                    {
-                        ViewModel?.Dispose();
-                        ViewModel = new AppViewModel(window.Select(data => data.ToString()));
-                    });
+                {
+                    dataSubscription?.Dispose();
+                    dataSubscription = ViewModel.Subscribe(window.Select(data => data.ToString()));
+                });
         }
     }
 }
