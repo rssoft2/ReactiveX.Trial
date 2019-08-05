@@ -27,7 +27,11 @@ namespace WpfApp1
                 .Subscribe(pattern => StopDataProvider(dataProvider, subscription));
 
             Observable.FromEventPattern(this, "Closed")
-                .Subscribe(pattern => StopDataProvider(dataProvider, subscription));
+                .Subscribe(pattern =>
+                {
+                    StopDataProvider(dataProvider, subscription);
+                    ViewModel?.Dispose();
+                });
 
             this.WhenActivated(disposableRegistration =>
                 {
@@ -39,9 +43,6 @@ namespace WpfApp1
                     subscription = RestartDataProvider(dataProvider, subscription);
                 }
             );
-
-            Observable.FromEventPattern(this, nameof(Deactivated))
-                .Subscribe(pattern => ViewModel?.Dispose());
         }
 
         private static void StopDataProvider(IDataProvider dataProvider, IDisposable subscription)
