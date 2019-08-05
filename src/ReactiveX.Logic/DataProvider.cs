@@ -16,11 +16,9 @@ namespace ReactiveX.Logic
         public DataProvider()
         {
             _random = new Random();
-            ChartData = Observable.Empty<ChartData>();
             BufferedChartData = Observable.Empty<IObservable<ChartData>>();
         }
 
-        internal IObservable<ChartData> ChartData { get; private set; }
         public IObservable<IObservable<ChartData>> BufferedChartData { get; private set; }
 
         public void Restart(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift)
@@ -33,16 +31,16 @@ namespace ReactiveX.Logic
         {
             _isRunning = true;
 
-            ChartData = Observable
+            var chartData = Observable
                 .Generate(0, _ => _isRunning, _ => _, _ => _, NewThreadScheduler.Default)
                 .Sample(sampleInterval)
                 .Timestamp()
                 .Select(CreateChartData);
 
-            BufferedChartData = ChartData
+            BufferedChartData = chartData
                 .Buffer(bufferLength, timeShift)
                 .Select(list => list.ToObservable())
-                .StartWith(ChartData);
+                .StartWith(chartData);
         }
 
         public void Stop()

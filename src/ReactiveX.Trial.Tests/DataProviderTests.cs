@@ -15,7 +15,7 @@ namespace ReactiveX.Trial.Tests
         public void ChartData_NotStarted_NotNull()
         {
             var dataProvider = new DataProvider();
-            Assert.That(dataProvider.ChartData, Is.Not.Null);
+            Assert.That(dataProvider.BufferedChartData, Is.Not.Null);
         }
 
         [Test]
@@ -24,7 +24,7 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var received = false;
 
-            dataProvider.ChartData.Subscribe(data => received = true);
+            dataProvider.BufferedChartData.Subscribe(data => received = true);
             Thread.Sleep(100);
 
             Assert.That(received, Is.False);
@@ -36,12 +36,14 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var received = false;
 
-            dataProvider.Start(_sampleIntervall, TimeSpan.Zero, TimeSpan.Zero);
-            dataProvider.ChartData.Subscribe(data =>
-            {
-                Console.WriteLine(data);
-                received = true;
-            });
+            dataProvider.Start(_sampleIntervall, _bufferLength, _timeShift);
+            dataProvider.BufferedChartData
+                .Subscribe(
+                    buffer =>
+                    {
+                        buffer.Subscribe(data => Console.WriteLine($"new data: {DateTime.Now:ss:fff}, {data}"));
+                        received = true;
+                    });
             Thread.Sleep(100);
 
             Assert.That(received, Is.True);
@@ -53,9 +55,14 @@ namespace ReactiveX.Trial.Tests
             var dataProvider = new DataProvider();
             var completed = false;
 
-            dataProvider.Start(_sampleIntervall, TimeSpan.Zero, TimeSpan.Zero);
-            dataProvider.ChartData
-                .Subscribe(Console.WriteLine, () => completed = true);
+            dataProvider.Start(_sampleIntervall, _bufferLength, _timeShift);
+            dataProvider.BufferedChartData
+                .Subscribe(
+                    buffer =>
+                    {
+                        buffer.Subscribe(data => Console.WriteLine($"new data: {DateTime.Now:ss:fff}, {data}"));
+                    },
+                    () => completed = true);
             dataProvider.Stop();
             Thread.Sleep(100);
 
@@ -70,17 +77,15 @@ namespace ReactiveX.Trial.Tests
             var w = 0;
 
             Console.WriteLine($"start: {DateTime.Now:ss:fff}");
-            dataProvider.Start(
-                _sampleIntervall,
-                _bufferLength,
-                _timeShift);
-            dataProvider.BufferedChartData.Subscribe(buffer =>
-            {
-                var x = w++;
-                Console.WriteLine($"new window: {DateTime.Now:ss:fff}");
-                buffer.Subscribe(data => Console.WriteLine($"new data: w={x}, {DateTime.Now:ss:fff}, {data}"));
-                received++;
-            });
+            dataProvider.Start(_sampleIntervall, _bufferLength, _timeShift);
+            dataProvider.BufferedChartData
+                .Subscribe(buffer =>
+                {
+                    var x = w++;
+                    Console.WriteLine($"new window: {DateTime.Now:ss:fff}");
+                    buffer.Subscribe(data => Console.WriteLine($"new data: w={x}, {DateTime.Now:ss:fff}, {data}"));
+                    received++;
+                });
             Thread.Sleep(1000);
 
             Assert.That(received, Is.GreaterThan(1));
