@@ -34,7 +34,6 @@ namespace ReactiveX.Logic
             var chartData = Observable
                 .Generate(0, _ => _isRunning, _ => _, _ => _, NewThreadScheduler.Default)
                 .Sample(sampleInterval)
-                .Timestamp()
                 .Select(CreateChartData);
 
             BufferedChartData = chartData
@@ -48,12 +47,12 @@ namespace ReactiveX.Logic
             _isRunning = false;
         }
 
-        private ChartData CreateChartData(Timestamped<int> timestamped, int index)
+        private ChartData CreateChartData(int index)
         {
             return new ChartData
             {
                 Value = _random.NextDouble(),
-                Timestamp = timestamped.Timestamp,
+                Timestamp = DateTimeOffset.Now,
                 EventId = index
             };
         }
