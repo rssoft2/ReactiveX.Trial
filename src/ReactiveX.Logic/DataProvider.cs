@@ -2,6 +2,9 @@
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("ReactiveX.Trial.Tests")]
 
 namespace ReactiveX.Logic
 {
@@ -14,12 +17,10 @@ namespace ReactiveX.Logic
         {
             _random = new Random();
             ChartData = Observable.Empty<ChartData>();
-            WindowedChartData = Observable.Empty<IObservable<ChartData>>();
             BufferedChartData = Observable.Empty<IObservable<ChartData>>();
         }
 
-        public IObservable<ChartData> ChartData { get; private set; }
-        public IObservable<IObservable<ChartData>> WindowedChartData { get; private set; }
+        internal IObservable<ChartData> ChartData { get; private set; }
         public IObservable<IObservable<ChartData>> BufferedChartData { get; private set; }
 
         public void Restart(TimeSpan sampleInterval, TimeSpan bufferLength, TimeSpan timeShift)
@@ -38,13 +39,10 @@ namespace ReactiveX.Logic
                 .Timestamp()
                 .Select(CreateChartData);
 
-            WindowedChartData = ChartData.Window(bufferLength, timeShift);
-
             BufferedChartData = ChartData
                 .Buffer(bufferLength, timeShift)
                 .Select(list => list.ToObservable())
                 .StartWith(ChartData);
-
         }
 
         public void Stop()

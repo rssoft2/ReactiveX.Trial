@@ -63,29 +63,6 @@ namespace ReactiveX.Trial.Tests
         }
 
         [Test]
-        public void WindowedChartData_Subscribed_WindowsReceived()
-        {
-            IDataProvider dataProvider = new DataProvider();
-            var received = 0;
-            var w = 0;
-
-            dataProvider.Start(
-                _sampleIntervall,
-                _bufferLength,
-                _timeShift);
-            dataProvider.WindowedChartData.Subscribe(window =>
-            {
-                var x = w++;
-                Console.WriteLine($"new window: {DateTime.Now:ss:fff}");
-                window.Subscribe(data => Console.WriteLine($"new data: w={x}, {DateTime.Now:ss:fff}, {data}"));
-                received++;
-            });
-            Thread.Sleep(1000);
-
-            Assert.That(received, Is.GreaterThan(1));
-        }
-
-        [Test]
         public void BufferedChartData_Subscribed_BuffersReceived()
         {
             IDataProvider dataProvider = new DataProvider();
