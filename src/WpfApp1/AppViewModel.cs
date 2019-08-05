@@ -21,8 +21,7 @@ namespace WpfApp1
 
         public void Subscribe(IObservable<ChartData> observable)
         {
-            _valuesSubscription?.Dispose();
-            Values?.Dispose();
+            Dispose();
             
             Values = new SourceList<ChartData>(observable.ToObservableChangeSet());
 
