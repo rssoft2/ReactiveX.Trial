@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -20,22 +19,6 @@ namespace WpfApp1
             IDataProvider dataProvider = new DataProvider();
             var subscription = Disposable.Empty;
 
-            //Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
-            //    .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).X) < 10)
-            //    .Subscribe(eventArgs =>
-            //    {
-            //        dataProvider.Restart(TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(2), TimeSpan.FromMilliseconds(200));
-
-            //        dataProvider.WindowedChartData
-            //            .ObserveOn(DispatcherScheduler.Current)
-            //            .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
-            //    });
-
-            //Observable.FromEventPattern<MouseEventArgs>(this, "MouseMove")
-            //    .Where(eventArgs => Math.Abs(eventArgs.EventArgs.GetPosition(this).Y) < 10)
-            //    .Subscribe(eventArgs => dataProvider.Stop());
-
-
             Observable.FromEventPattern(Start, "Click")
                 .Subscribe(pattern => { subscription = RestartDataProvider(dataProvider, subscription); });
 
@@ -44,7 +27,7 @@ namespace WpfApp1
 
             Observable.FromEventPattern(this, "Closed")
                 .Subscribe(pattern => StopDataProvider(dataProvider, subscription));
-            
+
             this.WhenActivated(disposableRegistration =>
                 {
                     this.OneWayBind(ViewModel,
@@ -70,11 +53,8 @@ namespace WpfApp1
 
             return dataProvider.BufferedChartData
                 .ObserveOn(DispatcherScheduler.Current)
+                .Select(list => list.ToObservable())
                 .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
-
-            //dataProvider.WindowedChartData
-            //    .ObserveOn(DispatcherScheduler.Current)
-            //    .Subscribe(window => ViewModel = new AppViewModel(window.Select(data => data.ToString())));
         }
     }
 }
