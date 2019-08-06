@@ -52,7 +52,7 @@ namespace ReactiveX.Logic
             _isRunning = false;
         }
 
-        private ChartData CreateChartData(int index)
+        private ChartData CreateChartData(int id, int index)
         {
             return new ChartData
             {
